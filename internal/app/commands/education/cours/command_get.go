@@ -1,6 +1,7 @@
 package cours
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 
@@ -12,23 +13,28 @@ func (c *EducationCoursCommander) Get(inputMessage *tgbotapi.Message) {
 
 	idx, err := strconv.Atoi(args)
 	if err != nil {
-		log.Println("wrong args", args)
+		c.SendError(inputMessage, fmt.Errorf(
+			"❌ Wrong args. \n"+
+				"⚠️ Correct command format: /get__education__cours {ID}",
+		))
+
 		return
 	}
 
-	product, err := c.subdomainService.Get(idx)
+	cours, err := c.coursService.Describe(uint64(idx))
 	if err != nil {
-		log.Printf("fail to get product with idx %d: %v", idx, err)
+		c.SendError(inputMessage, err)
+
 		return
 	}
 
 	msg := tgbotapi.NewMessage(
 		inputMessage.Chat.ID,
-		product.Title,
+		fmt.Sprintf("ℹ️ *ID:* %v, *Title:* %s, *Author:* %s, *Year:* %v \n", idx, cours.Title, cours.Author, cours.Year),
 	)
 
 	_, err = c.bot.Send(msg)
 	if err != nil {
-		log.Printf("DemoSubdomainCommander.Get: error sending reply message to chat - %v", err)
+		log.Printf("EducationCoursCommander.Get: error sending reply message to chat - %v", err)
 	}
 }

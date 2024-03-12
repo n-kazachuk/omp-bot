@@ -2,39 +2,55 @@ package cours
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/ozonmp/omp-bot/internal/app/path"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/ozonmp/omp-bot/internal/app/path"
 )
 
 func (c *EducationCoursCommander) List(inputMessage *tgbotapi.Message) {
-	outputMsgText := "Here all the products: \n\n"
+	var msg tgbotapi.MessageConfig
+	var outputMsgText string
 
-	products := c.subdomainService.List()
-	for _, p := range products {
-		outputMsgText += p.Title
-		outputMsgText += "\n"
+	courses, _ := c.coursService.List(0, PageSize)
+
+	if len(courses) > 0 {
+		outputMsgText = "ℹ️ Here all the courses: \n\n"
+
+		for index, c := range courses {
+			outputMsgText += fmt.Sprintf(
+				"*ID:* %v, *Title:* %s, *Author:* %s, *Year:* %v \n", index, c.Title, c.Author, c.Year,
+			)
+		}
+
+		outputMsgText += fmt.Sprintf("\n ℹ️ Cureent page: %v", 1)
+
+		msg = tgbotapi.NewMessage(inputMessage.Chat.ID, outputMsgText)
+
+		if c.coursService.GetCoursesCount() > PageSize {
+			serializedData, _ := json.Marshal(CallbackListData{
+				PageNumber: 1,
+			})
+
+			callbackPath := path.CallbackPath{
+				Domain:       "education",
+				Subdomain:    "cours",
+				CallbackName: "list",
+				CallbackData: string(serializedData),
+			}
+
+			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
+				tgbotapi.NewInlineKeyboardRow(
+					tgbotapi.NewInlineKeyboardButtonData("Next page ➡️", callbackPath.String()),
+				),
+			)
+		}
+	} else {
+		msg = tgbotapi.NewMessage(inputMessage.Chat.ID, "ℹ️ No products to display on this page.")
 	}
 
-	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, outputMsgText)
-
-	serializedData, _ := json.Marshal(CallbackListData{
-		Offset: 21,
-	})
-
-	callbackPath := path.CallbackPath{
-		Domain:       "demo",
-		Subdomain:    "subdomain",
-		CallbackName: "list",
-		CallbackData: string(serializedData),
-	}
-
-	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Next page", callbackPath.String()),
-		),
-	)
+	msg.ParseMode = tgbotapi.ModeMarkdown
 
 	_, err := c.bot.Send(msg)
 	if err != nil {

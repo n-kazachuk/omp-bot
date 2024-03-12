@@ -3,33 +3,64 @@ package cours
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/ozonmp/omp-bot/internal/model/education"
 	"log"
 	"strconv"
 	"strings"
 )
 
-func (c *EducationCoursCommander) New(inputMessage *tgbotapi.Message) {
+func (c *EducationCoursCommander) Update(inputMessage *tgbotapi.Message) {
 	args := strings.Split(inputMessage.CommandArguments(), ",")
 	wrongFormatErrorMsg := "❌ Wrong command format for add new cours. \n" +
-		"⚠️ Correct command format: /new__education__cours Title: {title}, Author: {author}, Year: {year}"
+		"⚠️ Correct command format: /edit__education__cours ID: {ID}, {Field}: {value}, ..."
 
-	if len(args) < 3 {
+	if len(args) < 2 {
 		c.SendError(inputMessage, fmt.Errorf(wrongFormatErrorMsg))
 		return
 	}
 
-	cours := education.Cours{}
+	var id int
+	ok := false
 
 	for _, arg := range args {
-		keyValue := strings.SplitN(arg, ":", 2)
-		if len(keyValue) != 2 {
+		key, value, err := c.ParseCoursArg(arg)
+		if err != nil {
 			c.SendError(inputMessage, fmt.Errorf(wrongFormatErrorMsg))
 			return
 		}
 
-		key := strings.TrimSpace(keyValue[0])
-		value := strings.TrimSpace(keyValue[1])
+		if key == "ID" {
+			id, err = strconv.Atoi(value)
+			if err != nil {
+				c.SendError(inputMessage, err)
+				return
+			}
+
+			ok = true
+			break
+		}
+	}
+
+	if !ok {
+		c.SendError(inputMessage, fmt.Errorf(wrongFormatErrorMsg))
+		return
+	}
+
+	cours, err := c.coursService.Describe(uint64(id))
+	if err != nil {
+		c.SendError(inputMessage, err)
+		return
+	}
+
+	for _, arg := range args {
+		key, value, err := c.ParseCoursArg(arg)
+		if err != nil {
+			c.SendError(inputMessage, err)
+			return
+		}
+
+		if key == "ID" {
+			continue
+		}
 
 		switch key {
 		case "Title":
@@ -50,12 +81,13 @@ func (c *EducationCoursCommander) New(inputMessage *tgbotapi.Message) {
 		}
 	}
 
-	idx, err := c.coursService.Create(cours)
+	err = c.coursService.Update(uint64(id), *cours)
 	if err != nil {
-		c.SendError(inputMessage, fmt.Errorf("❌ Failed to add new cours"))
+		c.SendError(inputMessage, err)
+		return
 	}
 
-	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, fmt.Sprintf("✅️ New cours added with course ID: %v", idx))
+	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, fmt.Sprintf("✅️ Cours with ID: %v succesful edited", id))
 
 	_, err = c.bot.Send(msg)
 	if err != nil {

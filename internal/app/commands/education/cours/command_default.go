@@ -9,7 +9,7 @@ import (
 func (c *EducationCoursCommander) Default(inputMessage *tgbotapi.Message) {
 	log.Printf("[%s] %s", inputMessage.From.UserName, inputMessage.Text)
 
-	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, "You wrote: "+inputMessage.Text)
+	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, "❌ Undefined command: "+inputMessage.Text+". Write /help__education__cours for help")
 
 	_, err := c.bot.Send(msg)
 	if err != nil {

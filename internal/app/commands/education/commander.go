@@ -4,13 +4,17 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/ozonmp/omp-bot/internal/app/commands/education/cours"
 	"github.com/ozonmp/omp-bot/internal/app/path"
-	"github.com/ozonmp/omp-bot/internal/app/router"
 	"log"
 )
 
+type Commander interface {
+	HandleCallback(callback *tgbotapi.CallbackQuery, callbackPath path.CallbackPath)
+	HandleCommand(message *tgbotapi.Message, commandPath path.CommandPath)
+}
+
 type EducationCommander struct {
 	bot            *tgbotapi.BotAPI
-	coursCommander router.Commander
+	coursCommander Commander
 }
 
 func NewEducationCommander(

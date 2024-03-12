@@ -57,6 +57,7 @@ func (c *Router) handleCallback(callback *tgbotapi.CallbackQuery) {
 	case "demo":
 		c.demoCommander.HandleCallback(callback, callbackPath)
 	case "education":
+		c.educationCommander.HandleCallback(callback, callbackPath)
 		break
 	default:
 		log.Printf("Router.handleCallback: unknown domain - %s", callbackPath.Domain)

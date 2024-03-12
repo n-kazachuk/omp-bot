@@ -8,28 +8,32 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-func (c *EducationCoursCommander) Get(inputMessage *tgbotapi.Message) {
+func (c *EducationCoursCommander) Remove(inputMessage *tgbotapi.Message) {
 	args := inputMessage.CommandArguments()
 
 	idx, err := strconv.Atoi(args)
 	if err != nil {
-		log.Println("wrong args", args)
+		c.SendError(inputMessage, fmt.Errorf(
+			"❌ Wrong args. \n"+
+				"⚠️ Correct command format: /delete__education__cours {ID}",
+		))
+
 		return
 	}
 
-	cours, err := c.coursService.Describe(uint64(idx))
+	_, err = c.coursService.Remove(uint64(idx))
 	if err != nil {
-		log.Printf("fail to get cours with ID: %d, error: %v", idx, err)
+		c.SendError(inputMessage, err)
 		return
 	}
 
 	msg := tgbotapi.NewMessage(
 		inputMessage.Chat.ID,
-		fmt.Sprintf("ID: %v, Title: %s, Author: %s, Year: %v \n", idx, cours.Title, cours.Author, cours.Year),
+		fmt.Sprintf("✅ Cours with ID: %v, was removed \n", idx),
 	)
 
 	_, err = c.bot.Send(msg)
 	if err != nil {
-		log.Printf("EducationCoursCommander.Get: error sending reply message to chat - %v", err)
+		log.Printf("EducationCoursCommander.Remove: error sending reply message to chat - %v", err)
 	}
 }
