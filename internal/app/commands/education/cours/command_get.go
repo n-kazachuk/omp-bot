@@ -30,8 +30,10 @@ func (c *EducationCoursCommander) Get(inputMessage *tgbotapi.Message) {
 
 	msg := tgbotapi.NewMessage(
 		inputMessage.Chat.ID,
-		fmt.Sprintf("ℹ️ *ID:* %v, *Title:* %s, *Author:* %s, *Year:* %v \n", idx, cours.Title, cours.Author, cours.Year),
+		fmt.Sprintf("ℹ️ *ID:* %v, *Title:* %s, *Author:* %s, *Year:* %v \n", cours.ID, cours.Title, cours.Author, cours.Year),
 	)
+
+	msg.ParseMode = tgbotapi.ModeMarkdown
 
 	_, err = c.bot.Send(msg)
 	if err != nil {

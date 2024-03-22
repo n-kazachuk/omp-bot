@@ -29,9 +29,9 @@ func (c *EducationCoursCommander) CallbackList(callback *tgbotapi.CallbackQuery,
 	outputMsgText := "ℹ️ Here all the courses: \n\n"
 
 	courses, _ := c.coursService.List(uint64(parsedData.PageNumber), PageSize)
-	for index, c := range courses {
+	for _, c := range courses {
 		outputMsgText += fmt.Sprintf(
-			"*ID:* %v, *Title:* %s, *Author:* %s, *Year:* %v \n", (parsedData.PageNumber*PageSize)+index, c.Title, c.Author, c.Year,
+			"*ID:* %v, *Title:* %s, *Author:* %s, *Year:* %v \n", c.ID, c.Title, c.Author, c.Year,
 		)
 	}
 

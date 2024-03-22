@@ -1,14 +1,17 @@
 package education
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Cours struct {
 	Title, Author string
-	Year          int
+	ID, Year      int
 }
 
-func NewCours(title, author string, year int) Cours {
+func NewCours(ID, year int, title, author string) Cours {
 	return Cours{
+		ID:     ID,
 		Title:  title,
 		Author: author,
 		Year:   year,
@@ -16,5 +19,5 @@ func NewCours(title, author string, year int) Cours {
 }
 
 func (c *Cours) String() string {
-	return fmt.Sprintf("Title: %s, Author: %v, Year: %v", c.Title, c.Author, c.Year)
+	return fmt.Sprintf("ID: %v, Title: %s, Author: %v, Year: %v", c.ID, c.Title, c.Author, c.Year)
 }

@@ -18,9 +18,9 @@ func (c *EducationCoursCommander) List(inputMessage *tgbotapi.Message) {
 	if len(courses) > 0 {
 		outputMsgText = "ℹ️ Here all the courses: \n\n"
 
-		for index, c := range courses {
+		for _, c := range courses {
 			outputMsgText += fmt.Sprintf(
-				"*ID:* %v, *Title:* %s, *Author:* %s, *Year:* %v \n", index, c.Title, c.Author, c.Year,
+				"*ID:* %v, *Title:* %s, *Author:* %s, *Year:* %v \n", c.ID, c.Title, c.Author, c.Year,
 			)
 		}
 
